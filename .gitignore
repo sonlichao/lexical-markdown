@@ -18,7 +18,7 @@ yarn-error.log*
 .eslintcache
 
 /.vscode
-dist/
+
 
 /public/index.html
 

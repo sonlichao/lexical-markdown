@@ -21,12 +21,24 @@
     "@lexical/rich-text": "0.12.4",
     "@lexical/text": "0.12.4",
     "@lexical/utils": "0.12.4",
-    "lexical": "^0.12.4"
+    "global": "^4.4.0",
+    "lexical": "^0.12.4",
+    "tsc": "^2.0.4",
+    "typescript": "^5.3.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/lexical",
     "directory": "packages/lexical-markdown"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
   },
   "devDependencies": {
     "@lexical/headless": "^0.12.4",
