@@ -14,16 +14,24 @@
     "lexical": "0.12.4"
   },
   "dependencies": {
-    "@lexical/utils": "0.12.4",
     "@lexical/code": "0.12.4",
-    "@lexical/text": "0.12.4",
-    "@lexical/rich-text": "0.12.4",
+    "@lexical/link": "0.12.4",
     "@lexical/list": "0.12.4",
-    "@lexical/link": "0.12.4"
+    "@lexical/markdown": "^0.12.4",
+    "@lexical/rich-text": "0.12.4",
+    "@lexical/text": "0.12.4",
+    "@lexical/utils": "0.12.4",
+    "lexical": "^0.12.4"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/lexical",
     "directory": "packages/lexical-markdown"
+  },
+  "devDependencies": {
+    "@lexical/headless": "^0.12.4",
+    "@lexical/html": "^0.12.4",
+    "@types/jest": "^29.5.10",
+    "jest": "^29.7.0"
   }
 }

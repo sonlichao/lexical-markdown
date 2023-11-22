@@ -6,11 +6,11 @@
  *
  */
 
-import type {ListType} from '@lexical/list';
-import type {HeadingTagType} from '@lexical/rich-text';
+import type { ListType } from "@lexical/list";
+import type { HeadingTagType } from "@lexical/rich-text";
 
-import {$createCodeNode, $isCodeNode, CodeNode} from '@lexical/code';
-import {$createLinkNode, $isLinkNode, LinkNode} from '@lexical/link';
+import { $createCodeNode, $isCodeNode, CodeNode } from "@lexical/code";
+import { $createLinkNode, $isLinkNode, LinkNode } from "@lexical/link";
 import {
   $createListItemNode,
   $createListNode,
@@ -18,7 +18,7 @@ import {
   $isListNode,
   ListItemNode,
   ListNode,
-} from '@lexical/list';
+} from "@lexical/list";
 import {
   $createHeadingNode,
   $createQuoteNode,
@@ -26,7 +26,7 @@ import {
   $isQuoteNode,
   HeadingNode,
   QuoteNode,
-} from '@lexical/rich-text';
+} from "@lexical/rich-text";
 import {
   $createLineBreakNode,
   $createTextNode,
@@ -36,35 +36,27 @@ import {
   LexicalNode,
   TextFormatType,
   TextNode,
-} from 'lexical';
+} from "lexical";
 
-export type Transformer =
-  | ElementTransformer
-  | TextFormatTransformer
-  | TextMatchTransformer;
+export type Transformer = ElementTransformer | TextFormatTransformer | TextMatchTransformer;
 
 export type ElementTransformer = {
   dependencies: Array<Klass<LexicalNode>>;
   export: (
     node: LexicalNode,
     // eslint-disable-next-line no-shadow
-    traverseChildren: (node: ElementNode) => string,
+    traverseChildren: (node: ElementNode) => string
   ) => string | null;
   regExp: RegExp;
-  replace: (
-    parentNode: ElementNode,
-    children: Array<LexicalNode>,
-    match: Array<string>,
-    isImport: boolean,
-  ) => void;
-  type: 'element';
+  replace: (parentNode: ElementNode, children: Array<LexicalNode>, match: Array<string>, isImport: boolean) => void;
+  type: "element";
 };
 
 export type TextFormatTransformer = Readonly<{
   format: ReadonlyArray<TextFormatType>;
   tag: string;
   intraword?: boolean;
-  type: 'text-format';
+  type: "text-format";
 }>;
 
 export type TextMatchTransformer = Readonly<{
@@ -74,18 +66,16 @@ export type TextMatchTransformer = Readonly<{
     // eslint-disable-next-line no-shadow
     exportChildren: (node: ElementNode) => string,
     // eslint-disable-next-line no-shadow
-    exportFormat: (node: TextNode, textContent: string) => string,
+    exportFormat: (node: TextNode, textContent: string) => string
   ) => string | null;
   importRegExp: RegExp;
   regExp: RegExp;
   replace: (node: TextNode, match: RegExpMatchArray) => void;
   trigger: string;
-  type: 'text-match';
+  type: "text-match";
 }>;
 
-const createBlockNode = (
-  createNode: (match: Array<string>) => ElementNode,
-): ElementTransformer['replace'] => {
+const createBlockNode = (createNode: (match: Array<string>) => ElementNode): ElementTransformer["replace"] => {
   return (parentNode, children, match) => {
     const node = createNode(match);
     node.append(...children);
@@ -98,13 +88,11 @@ const createBlockNode = (
 // TODO: should be an option
 const LIST_INDENT_SIZE = 4;
 
-const listReplace = (listType: ListType): ElementTransformer['replace'] => {
+const listReplace = (listType: ListType): ElementTransformer["replace"] => {
   return (parentNode, children, match) => {
     const previousNode = parentNode.getPreviousSibling();
     const nextNode = parentNode.getNextSibling();
-    const listItem = $createListItemNode(
-      listType === 'check' ? match[3] === 'x' : undefined,
-    );
+    const listItem = $createListItemNode(listType === "check" ? match[3] === "x" : undefined);
     if ($isListNode(nextNode) && nextNode.getListType() === listType) {
       const firstChild = nextNode.getFirstChild();
       if (firstChild !== null) {
@@ -114,17 +102,11 @@ const listReplace = (listType: ListType): ElementTransformer['replace'] => {
         nextNode.append(listItem);
       }
       parentNode.remove();
-    } else if (
-      $isListNode(previousNode) &&
-      previousNode.getListType() === listType
-    ) {
+    } else if ($isListNode(previousNode) && previousNode.getListType() === listType) {
       previousNode.append(listItem);
       parentNode.remove();
     } else {
-      const list = $createListNode(
-        listType,
-        listType === 'number' ? Number(match[2]) : undefined,
-      );
+      const list = $createListNode(listType, listType === "number" ? Number(match[2]) : undefined);
       list.append(listItem);
       parentNode.replace(list);
     }
@@ -137,12 +119,8 @@ const listReplace = (listType: ListType): ElementTransformer['replace'] => {
   };
 };
 
-const listExport = (
-  listNode: ListNode,
-  exportChildren: (node: ElementNode) => string,
-  depth: number,
-): string => {
-  const output = [];
+const listExport = (listNode: ListNode, exportChildren: (node: ElementNode) => string, depth: number): string => {
+  const output: string[] = [];
   const children = listNode.getChildren();
   let index = 0;
   for (const listItemNode of children) {
@@ -154,20 +132,20 @@ const listExport = (
           continue;
         }
       }
-      const indent = ' '.repeat(depth * LIST_INDENT_SIZE);
+      const indent = " ".repeat(depth * LIST_INDENT_SIZE);
       const listType = listNode.getListType();
       const prefix =
-        listType === 'number'
+        listType === "number"
           ? `${listNode.getStart() + index}. `
-          : listType === 'check'
-          ? `- [${listItemNode.getChecked() ? 'x' : ' '}] `
-          : '- ';
+          : listType === "check"
+          ? `- [${listItemNode.getChecked() ? "x" : " "}] `
+          : "- ";
       output.push(indent + prefix + exportChildren(listItemNode));
       index++;
     }
   }
 
-  return output.join('\n');
+  return output.join("\n");
 };
 
 export const HEADING: ElementTransformer = {
@@ -177,14 +155,14 @@ export const HEADING: ElementTransformer = {
       return null;
     }
     const level = Number(node.getTag().slice(1));
-    return '#'.repeat(level) + ' ' + exportChildren(node);
+    return "#".repeat(level) + " " + exportChildren(node);
   },
   regExp: /^(#{1,6})\s/,
   replace: createBlockNode((match) => {
-    const tag = ('h' + match[1].length) as HeadingTagType;
+    const tag = ("h" + match[1].length) as HeadingTagType;
     return $createHeadingNode(tag);
   }),
-  type: 'element',
+  type: "element",
 };
 
 export const QUOTE: ElementTransformer = {
@@ -194,22 +172,19 @@ export const QUOTE: ElementTransformer = {
       return null;
     }
 
-    const lines = exportChildren(node).split('\n');
-    const output = [];
+    const lines = exportChildren(node).split("\n");
+    const output: string[] = [];
     for (const line of lines) {
-      output.push('> ' + line);
+      output.push("> " + line);
     }
-    return output.join('\n');
+    return output.join("\n");
   },
   regExp: /^>\s/,
   replace: (parentNode, children, _match, isImport) => {
     if (isImport) {
       const previousNode = parentNode.getPreviousSibling();
       if ($isQuoteNode(previousNode)) {
-        previousNode.splice(previousNode.getChildrenSize(), 0, [
-          $createLineBreakNode(),
-          ...children,
-        ]);
+        previousNode.splice(previousNode.getChildrenSize(), 0, [$createLineBreakNode(), ...children]);
         previousNode.select(0, 0);
         parentNode.remove();
         return;
@@ -221,7 +196,7 @@ export const QUOTE: ElementTransformer = {
     parentNode.replace(node);
     node.select(0, 0);
   },
-  type: 'element',
+  type: "element",
 };
 
 export const CODE: ElementTransformer = {
@@ -231,19 +206,13 @@ export const CODE: ElementTransformer = {
       return null;
     }
     const textContent = node.getTextContent();
-    return (
-      '```' +
-      (node.getLanguage() || '') +
-      (textContent ? '\n' + textContent : '') +
-      '\n' +
-      '```'
-    );
+    return "```" + (node.getLanguage() || "") + (textContent ? "\n" + textContent : "") + "\n" + "```";
   },
   regExp: /^```(\w{1,10})?\s/,
   replace: createBlockNode((match) => {
     return $createCodeNode(match ? match[1] : undefined);
   }),
-  type: 'element',
+  type: "element",
 };
 
 export const UNORDERED_LIST: ElementTransformer = {
@@ -252,8 +221,8 @@ export const UNORDERED_LIST: ElementTransformer = {
     return $isListNode(node) ? listExport(node, exportChildren, 0) : null;
   },
   regExp: /^(\s*)[-*+]\s/,
-  replace: listReplace('bullet'),
-  type: 'element',
+  replace: listReplace("bullet"),
+  type: "element",
 };
 
 export const CHECK_LIST: ElementTransformer = {
@@ -262,8 +231,8 @@ export const CHECK_LIST: ElementTransformer = {
     return $isListNode(node) ? listExport(node, exportChildren, 0) : null;
   },
   regExp: /^(\s*)(?:-\s)?\s?(\[(\s|x)?\])\s/i,
-  replace: listReplace('check'),
-  type: 'element',
+  replace: listReplace("check"),
+  type: "element",
 };
 
 export const ORDERED_LIST: ElementTransformer = {
@@ -272,65 +241,65 @@ export const ORDERED_LIST: ElementTransformer = {
     return $isListNode(node) ? listExport(node, exportChildren, 0) : null;
   },
   regExp: /^(\s*)(\d{1,})\.\s/,
-  replace: listReplace('number'),
-  type: 'element',
+  replace: listReplace("number"),
+  type: "element",
 };
 
 export const INLINE_CODE: TextFormatTransformer = {
-  format: ['code'],
-  tag: '`',
-  type: 'text-format',
+  format: ["code"],
+  tag: "`",
+  type: "text-format",
 };
 
 export const HIGHLIGHT: TextFormatTransformer = {
-  format: ['highlight'],
-  tag: '==',
-  type: 'text-format',
+  format: ["highlight"],
+  tag: "==",
+  type: "text-format",
 };
 
 export const BOLD_ITALIC_STAR: TextFormatTransformer = {
-  format: ['bold', 'italic'],
-  tag: '***',
-  type: 'text-format',
+  format: ["bold", "italic"],
+  tag: "***",
+  type: "text-format",
 };
 
 export const BOLD_ITALIC_UNDERSCORE: TextFormatTransformer = {
-  format: ['bold', 'italic'],
+  format: ["bold", "italic"],
   intraword: false,
-  tag: '___',
-  type: 'text-format',
+  tag: "___",
+  type: "text-format",
 };
 
 export const BOLD_STAR: TextFormatTransformer = {
-  format: ['bold'],
-  tag: '**',
-  type: 'text-format',
+  format: ["bold"],
+  tag: "**",
+  type: "text-format",
 };
 
 export const BOLD_UNDERSCORE: TextFormatTransformer = {
-  format: ['bold'],
+  format: ["bold"],
   intraword: false,
-  tag: '__',
-  type: 'text-format',
+  tag: "__",
+  type: "text-format",
 };
 
 export const STRIKETHROUGH: TextFormatTransformer = {
-  format: ['strikethrough'],
-  tag: '~~',
-  type: 'text-format',
+  format: ["strikethrough"],
+  tag: "~~",
+  type: "text-format",
 };
 
 export const ITALIC_STAR: TextFormatTransformer = {
-  format: ['italic'],
-  tag: '*',
-  type: 'text-format',
+  format: ["italic"],
+  tag: "*",
+  type: "text-format",
 };
 
 export const ITALIC_UNDERSCORE: TextFormatTransformer = {
-  format: ['italic'],
+  format: ["italic"],
   intraword: false,
-  tag: '_',
-  type: 'text-format',
+  tag: "_",
+  type: "text-format",
 };
 
 // Order of text transformers matters:
@@ -356,18 +325,16 @@ export const LINK: TextMatchTransformer = {
       return linkContent;
     }
   },
-  importRegExp:
-    /(?:\[([^[]+)\])(?:\((?:([^()\s]+)(?:\s"((?:[^"]*\\")*[^"]*)"\s*)?)\))/,
-  regExp:
-    /(?:\[([^[]+)\])(?:\((?:([^()\s]+)(?:\s"((?:[^"]*\\")*[^"]*)"\s*)?)\))$/,
+  importRegExp: /(?:\[([^[]+)\])(?:\((?:([^()\s]+)(?:\s"((?:[^"]*\\")*[^"]*)"\s*)?)\))/,
+  regExp: /(?:\[([^[]+)\])(?:\((?:([^()\s]+)(?:\s"((?:[^"]*\\")*[^"]*)"\s*)?)\))$/,
   replace: (textNode, match) => {
     const [, linkText, linkUrl, linkTitle] = match;
-    const linkNode = $createLinkNode(linkUrl, {title: linkTitle});
+    const linkNode = $createLinkNode(linkUrl, { title: linkTitle });
     const linkTextNode = $createTextNode(linkText);
     linkTextNode.setFormat(textNode.getFormat());
     linkNode.append(linkTextNode);
     textNode.replace(linkNode);
   },
-  trigger: ')',
-  type: 'text-match',
+  trigger: ")",
+  type: "text-match",
 };

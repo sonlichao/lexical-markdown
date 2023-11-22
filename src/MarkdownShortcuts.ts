@@ -6,15 +6,10 @@
  *
  */
 
-import type {
-  ElementTransformer,
-  TextFormatTransformer,
-  TextMatchTransformer,
-  Transformer,
-} from '@lexical/markdown';
-import type {ElementNode, LexicalEditor, TextNode} from 'lexical';
+import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type { ElementNode, LexicalEditor, TextNode } from "lexical";
 
-import {$isCodeNode} from '@lexical/code';
+import { $isCodeNode } from "@lexical/code";
 import {
   $createRangeSelection,
   $getSelection,
@@ -23,24 +18,21 @@ import {
   $isRootOrShadowRoot,
   $isTextNode,
   $setSelection,
-} from 'lexical';
-import invariant from 'shared/invariant';
+} from "lexical";
+import invariant from "./invariant";
 
-import {TRANSFORMERS} from '.';
-import {indexBy, PUNCTUATION_OR_SPACE, transformersByType} from './utils';
+import { TRANSFORMERS } from ".";
+import { indexBy, PUNCTUATION_OR_SPACE, transformersByType } from "./utils";
 
 function runElementTransformers(
   parentNode: ElementNode,
   anchorNode: TextNode,
   anchorOffset: number,
-  elementTransformers: ReadonlyArray<ElementTransformer>,
+  elementTransformers: ReadonlyArray<ElementTransformer>
 ): boolean {
   const grandParentNode = parentNode.getParent();
 
-  if (
-    !$isRootOrShadowRoot(grandParentNode) ||
-    parentNode.getFirstChild() !== anchorNode
-  ) {
+  if (!$isRootOrShadowRoot(grandParentNode) || parentNode.getFirstChild() !== anchorNode) {
     return false;
   }
 
@@ -52,20 +44,18 @@ function runElementTransformers(
   // TODO:
   // Can have a quick check if caret is close enough to the beginning of the string (e.g. offset less than 10-20)
   // since otherwise it won't be a markdown shortcut, but tables are exception
-  if (textContent[anchorOffset - 1] !== ' ') {
+  if (textContent[anchorOffset - 1] !== " ") {
     return false;
   }
 
-  for (const {regExp, replace} of elementTransformers) {
+  for (const { regExp, replace } of elementTransformers) {
     const match = textContent.match(regExp);
 
     if (match && match[0].length === anchorOffset) {
       const nextSiblings = anchorNode.getNextSiblings();
       const [leadingNode, remainderNode] = anchorNode.splitText(anchorOffset);
       leadingNode.remove();
-      const siblings = remainderNode
-        ? [remainderNode, ...nextSiblings]
-        : nextSiblings;
+      const siblings = remainderNode ? [remainderNode, ...nextSiblings] : nextSiblings;
       replace(parentNode, siblings, match, false);
       return true;
     }
@@ -77,7 +67,7 @@ function runElementTransformers(
 function runTextMatchTransformers(
   anchorNode: TextNode,
   anchorOffset: number,
-  transformersByTrigger: Readonly<Record<string, Array<TextMatchTransformer>>>,
+  transformersByTrigger: Readonly<Record<string, Array<TextMatchTransformer>>>
 ): boolean {
   let textContent = anchorNode.getTextContent();
   const lastChar = textContent[anchorOffset - 1];
@@ -121,9 +111,7 @@ function runTextMatchTransformers(
 function runTextFormatTransformers(
   anchorNode: TextNode,
   anchorOffset: number,
-  textFormatTransformers: Readonly<
-    Record<string, ReadonlyArray<TextFormatTransformer>>
-  >,
+  textFormatTransformers: Readonly<Record<string, ReadonlyArray<TextFormatTransformer>>>
 ): boolean {
   const textContent = anchorNode.getTextContent();
   const closeTagEndIndex = anchorOffset - 1;
@@ -136,51 +124,38 @@ function runTextFormatTransformers(
   }
 
   for (const matcher of matchers) {
-    const {tag} = matcher;
+    const { tag } = matcher;
     const tagLength = tag.length;
     const closeTagStartIndex = closeTagEndIndex - tagLength + 1;
 
     // If tag is not single char check if rest of it matches with text content
     if (tagLength > 1) {
-      if (
-        !isEqualSubString(textContent, closeTagStartIndex, tag, 0, tagLength)
-      ) {
+      if (!isEqualSubString(textContent, closeTagStartIndex, tag, 0, tagLength)) {
         continue;
       }
     }
 
     // Space before closing tag cancels inline markdown
-    if (textContent[closeTagStartIndex - 1] === ' ') {
+    if (textContent[closeTagStartIndex - 1] === " ") {
       continue;
     }
 
     // Some tags can not be used within words, hence should have newline/space/punctuation after it
     const afterCloseTagChar = textContent[closeTagEndIndex + 1];
 
-    if (
-      matcher.intraword === false &&
-      afterCloseTagChar &&
-      !PUNCTUATION_OR_SPACE.test(afterCloseTagChar)
-    ) {
+    if (matcher.intraword === false && afterCloseTagChar && !PUNCTUATION_OR_SPACE.test(afterCloseTagChar)) {
       continue;
     }
 
     const closeNode = anchorNode;
     let openNode = closeNode;
-    let openTagStartIndex = getOpenTagStartIndex(
-      textContent,
-      closeTagStartIndex,
-      tag,
-    );
+    let openTagStartIndex = getOpenTagStartIndex(textContent, closeTagStartIndex, tag);
 
     // Go through text node siblings and search for opening tag
     // if haven't found it within the same text node as closing tag
     let sibling: TextNode | null = openNode;
 
-    while (
-      openTagStartIndex < 0 &&
-      (sibling = sibling.getPreviousSibling<TextNode>())
-    ) {
+    while (openTagStartIndex < 0 && (sibling = sibling.getPreviousSibling<TextNode>())) {
       if ($isLineBreakNode(sibling)) {
         break;
       }
@@ -188,11 +163,7 @@ function runTextFormatTransformers(
       if ($isTextNode(sibling)) {
         const siblingTextContent = sibling.getTextContent();
         openNode = sibling;
-        openTagStartIndex = getOpenTagStartIndex(
-          siblingTextContent,
-          siblingTextContent.length,
-          tag,
-        );
+        openTagStartIndex = getOpenTagStartIndex(siblingTextContent, siblingTextContent.length, tag);
       }
     }
 
@@ -202,31 +173,21 @@ function runTextFormatTransformers(
     }
 
     // No content between opening and closing tag
-    if (
-      openNode === closeNode &&
-      openTagStartIndex + tagLength === closeTagStartIndex
-    ) {
+    if (openNode === closeNode && openTagStartIndex + tagLength === closeTagStartIndex) {
       continue;
     }
 
     // Checking longer tags for repeating chars (e.g. *** vs **)
     const prevOpenNodeText = openNode.getTextContent();
 
-    if (
-      openTagStartIndex > 0 &&
-      prevOpenNodeText[openTagStartIndex - 1] === closeChar
-    ) {
+    if (openTagStartIndex > 0 && prevOpenNodeText[openTagStartIndex - 1] === closeChar) {
       continue;
     }
 
     // Some tags can not be used within words, hence should have newline/space/punctuation before it
     const beforeOpenTagChar = prevOpenNodeText[openTagStartIndex - 1];
 
-    if (
-      matcher.intraword === false &&
-      beforeOpenTagChar &&
-      !PUNCTUATION_OR_SPACE.test(beforeOpenTagChar)
-    ) {
+    if (matcher.intraword === false && beforeOpenTagChar && !PUNCTUATION_OR_SPACE.test(beforeOpenTagChar)) {
       continue;
     }
 
@@ -234,23 +195,19 @@ function runTextFormatTransformers(
     // to prevent any offset shifts if we start from opening one)
     const prevCloseNodeText = closeNode.getTextContent();
     const closeNodeText =
-      prevCloseNodeText.slice(0, closeTagStartIndex) +
-      prevCloseNodeText.slice(closeTagEndIndex + 1);
+      prevCloseNodeText.slice(0, closeTagStartIndex) + prevCloseNodeText.slice(closeTagEndIndex + 1);
     closeNode.setTextContent(closeNodeText);
-    const openNodeText =
-      openNode === closeNode ? closeNodeText : prevOpenNodeText;
+    const openNodeText = openNode === closeNode ? closeNodeText : prevOpenNodeText;
     openNode.setTextContent(
-      openNodeText.slice(0, openTagStartIndex) +
-        openNodeText.slice(openTagStartIndex + tagLength),
+      openNodeText.slice(0, openTagStartIndex) + openNodeText.slice(openTagStartIndex + tagLength)
     );
     const selection = $getSelection();
     const nextSelection = $createRangeSelection();
     $setSelection(nextSelection);
     // Adjust offset based on deleted chars
-    const newOffset =
-      closeTagEndIndex - tagLength * (openNode === closeNode ? 2 : 1) + 1;
-    nextSelection.anchor.set(openNode.__key, openTagStartIndex, 'text');
-    nextSelection.focus.set(closeNode.__key, newOffset, 'text');
+    const newOffset = closeTagEndIndex - tagLength * (openNode === closeNode ? 2 : 1) + 1;
+    nextSelection.anchor.set(openNode.__key, openTagStartIndex, "text");
+    nextSelection.focus.set(closeNode.__key, newOffset, "text");
 
     // Apply formatting to selected text
     for (const format of matcher.format) {
@@ -260,11 +217,7 @@ function runTextFormatTransformers(
     }
 
     // Collapse selection up to the focus point
-    nextSelection.anchor.set(
-      nextSelection.focus.key,
-      nextSelection.focus.offset,
-      nextSelection.focus.type,
-    );
+    nextSelection.anchor.set(nextSelection.focus.key, nextSelection.focus.offset, nextSelection.focus.type);
 
     // Remove formatting from collapsed selection
     for (const format of matcher.format) {
@@ -283,11 +236,7 @@ function runTextFormatTransformers(
   return false;
 }
 
-function getOpenTagStartIndex(
-  string: string,
-  maxIndex: number,
-  tag: string,
-): number {
+function getOpenTagStartIndex(string: string, maxIndex: number, tag: string): number {
   const tagLength = tag.length;
 
   for (let i = maxIndex; i >= tagLength; i--) {
@@ -295,7 +244,7 @@ function getOpenTagStartIndex(
 
     if (
       isEqualSubString(string, startIndex, tag, 0, tagLength) && // Space after opening tag cancels transformation
-      string[startIndex + tagLength] !== ' '
+      string[startIndex + tagLength] !== " "
     ) {
       return startIndex;
     }
@@ -304,13 +253,7 @@ function getOpenTagStartIndex(
   return -1;
 }
 
-function isEqualSubString(
-  stringA: string,
-  aStart: number,
-  stringB: string,
-  bStart: number,
-  length: number,
-): boolean {
+function isEqualSubString(stringA: string, aStart: number, stringB: string, bStart: number, length: number): boolean {
   for (let i = 0; i < length; i++) {
     if (stringA[aStart + i] !== stringB[bStart + i]) {
       return false;
@@ -322,117 +265,84 @@ function isEqualSubString(
 
 export function registerMarkdownShortcuts(
   editor: LexicalEditor,
-  transformers: Array<Transformer> = TRANSFORMERS,
+  transformers: Array<Transformer> = TRANSFORMERS
 ): () => void {
   const byType = transformersByType(transformers);
-  const textFormatTransformersIndex = indexBy(
-    byType.textFormat,
-    ({tag}) => tag[tag.length - 1],
-  );
-  const textMatchTransformersIndex = indexBy(
-    byType.textMatch,
-    ({trigger}) => trigger,
-  );
+  const textFormatTransformersIndex = indexBy(byType.textFormat, ({ tag }) => tag[tag.length - 1]);
+  const textMatchTransformersIndex = indexBy(byType.textMatch, ({ trigger }) => trigger);
 
   for (const transformer of transformers) {
     const type = transformer.type;
-    if (type === 'element' || type === 'text-match') {
+    if (type === "element" || type === "text-match") {
       const dependencies = transformer.dependencies;
       for (const node of dependencies) {
         if (!editor.hasNode(node)) {
           invariant(
             false,
-            'MarkdownShortcuts: missing dependency %s for transformer. Ensure node dependency is included in editor initial config.',
-            node.getType(),
+            "MarkdownShortcuts: missing dependency %s for transformer. Ensure node dependency is included in editor initial config.",
+            node.getType()
           );
         }
       }
     }
   }
 
-  const transform = (
-    parentNode: ElementNode,
-    anchorNode: TextNode,
-    anchorOffset: number,
-  ) => {
-    if (
-      runElementTransformers(
-        parentNode,
-        anchorNode,
-        anchorOffset,
-        byType.element,
-      )
-    ) {
+  const transform = (parentNode: ElementNode, anchorNode: TextNode, anchorOffset: number) => {
+    if (runElementTransformers(parentNode, anchorNode, anchorOffset, byType.element)) {
       return;
     }
 
-    if (
-      runTextMatchTransformers(
-        anchorNode,
-        anchorOffset,
-        textMatchTransformersIndex,
-      )
-    ) {
+    if (runTextMatchTransformers(anchorNode, anchorOffset, textMatchTransformersIndex)) {
       return;
     }
 
-    runTextFormatTransformers(
-      anchorNode,
-      anchorOffset,
-      textFormatTransformersIndex,
-    );
+    runTextFormatTransformers(anchorNode, anchorOffset, textFormatTransformersIndex);
   };
 
-  return editor.registerUpdateListener(
-    ({tags, dirtyLeaves, editorState, prevEditorState}) => {
-      // Ignore updates from undo/redo (as changes already calculated)
-      if (tags.has('historic')) {
+  return editor.registerUpdateListener(({ tags, dirtyLeaves, editorState, prevEditorState }) => {
+    // Ignore updates from undo/redo (as changes already calculated)
+    if (tags.has("historic")) {
+      return;
+    }
+
+    // If editor is still composing (i.e. backticks) we must wait before the user confirms the key
+    if (editor.isComposing()) {
+      return;
+    }
+
+    const selection = editorState.read($getSelection);
+    const prevSelection = prevEditorState.read($getSelection);
+
+    if (!$isRangeSelection(prevSelection) || !$isRangeSelection(selection) || !selection.isCollapsed()) {
+      return;
+    }
+
+    const anchorKey = selection.anchor.key;
+    const anchorOffset = selection.anchor.offset;
+
+    const anchorNode = editorState._nodeMap.get(anchorKey);
+
+    if (
+      !$isTextNode(anchorNode) ||
+      !dirtyLeaves.has(anchorKey) ||
+      (anchorOffset !== 1 && anchorOffset > prevSelection.anchor.offset + 1)
+    ) {
+      return;
+    }
+
+    editor.update(() => {
+      // Markdown is not available inside code
+      if (anchorNode.hasFormat("code")) {
         return;
       }
 
-      // If editor is still composing (i.e. backticks) we must wait before the user confirms the key
-      if (editor.isComposing()) {
+      const parentNode = anchorNode.getParent();
+
+      if (parentNode === null || $isCodeNode(parentNode)) {
         return;
       }
 
-      const selection = editorState.read($getSelection);
-      const prevSelection = prevEditorState.read($getSelection);
-
-      if (
-        !$isRangeSelection(prevSelection) ||
-        !$isRangeSelection(selection) ||
-        !selection.isCollapsed()
-      ) {
-        return;
-      }
-
-      const anchorKey = selection.anchor.key;
-      const anchorOffset = selection.anchor.offset;
-
-      const anchorNode = editorState._nodeMap.get(anchorKey);
-
-      if (
-        !$isTextNode(anchorNode) ||
-        !dirtyLeaves.has(anchorKey) ||
-        (anchorOffset !== 1 && anchorOffset > prevSelection.anchor.offset + 1)
-      ) {
-        return;
-      }
-
-      editor.update(() => {
-        // Markdown is not available inside code
-        if (anchorNode.hasFormat('code')) {
-          return;
-        }
-
-        const parentNode = anchorNode.getParent();
-
-        if (parentNode === null || $isCodeNode(parentNode)) {
-          return;
-        }
-
-        transform(parentNode, anchorNode, selection.anchor.offset);
-      });
-    },
-  );
+      transform(parentNode, anchorNode, selection.anchor.offset);
+    });
+  });
 }

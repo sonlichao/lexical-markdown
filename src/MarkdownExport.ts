@@ -6,53 +6,33 @@
  *
  */
 
-import type {
-  ElementTransformer,
-  TextFormatTransformer,
-  TextMatchTransformer,
-  Transformer,
-} from '@lexical/markdown';
-import type {ElementNode, LexicalNode, TextFormatType, TextNode} from 'lexical';
+import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type { ElementNode, LexicalNode, TextFormatType, TextNode } from "lexical";
 
-import {
-  $getRoot,
-  $isDecoratorNode,
-  $isElementNode,
-  $isLineBreakNode,
-  $isTextNode,
-} from 'lexical';
+import { $getRoot, $isDecoratorNode, $isElementNode, $isLineBreakNode, $isTextNode } from "lexical";
 
-import {transformersByType} from './utils';
+import { transformersByType } from "./utils";
 
-export function createMarkdownExport(
-  transformers: Array<Transformer>,
-): (node?: ElementNode) => string {
+export function createMarkdownExport(transformers: Array<Transformer>): (node?: ElementNode) => string {
   const byType = transformersByType(transformers);
 
   // Export only uses text formats that are responsible for single format
   // e.g. it will filter out *** (bold, italic) and instead use separate ** and *
-  const textFormatTransformers = byType.textFormat.filter(
-    (transformer) => transformer.format.length === 1,
-  );
+  const textFormatTransformers = byType.textFormat.filter((transformer) => transformer.format.length === 1);
 
   return (node) => {
-    const output = [];
+    const output: string[] = [];
     const children = (node || $getRoot()).getChildren();
 
     for (const child of children) {
-      const result = exportTopLevelElements(
-        child,
-        byType.element,
-        textFormatTransformers,
-        byType.textMatch,
-      );
+      const result = exportTopLevelElements(child, byType.element, textFormatTransformers, byType.textMatch);
 
       if (result != null) {
         output.push(result);
       }
     }
 
-    return output.join('\n\n');
+    return output.join("\n\n");
   };
 }
 
@@ -60,11 +40,11 @@ function exportTopLevelElements(
   node: LexicalNode,
   elementTransformers: Array<ElementTransformer>,
   textTransformersIndex: Array<TextFormatTransformer>,
-  textMatchTransformers: Array<TextMatchTransformer>,
+  textMatchTransformers: Array<TextMatchTransformer>
 ): string | null {
   for (const transformer of elementTransformers) {
     const result = transformer.export(node, (_node) =>
-      exportChildren(_node, textTransformersIndex, textMatchTransformers),
+      exportChildren(_node, textTransformersIndex, textMatchTransformers)
     );
 
     if (result != null) {
@@ -84,23 +64,17 @@ function exportTopLevelElements(
 function exportChildren(
   node: ElementNode,
   textTransformersIndex: Array<TextFormatTransformer>,
-  textMatchTransformers: Array<TextMatchTransformer>,
+  textMatchTransformers: Array<TextMatchTransformer>
 ): string {
-  const output = [];
+  const output: string[] = [];
   const children = node.getChildren();
 
   mainLoop: for (const child of children) {
     for (const transformer of textMatchTransformers) {
       const result = transformer.export(
         child,
-        (parentNode) =>
-          exportChildren(
-            parentNode,
-            textTransformersIndex,
-            textMatchTransformers,
-          ),
-        (textNode, textContent) =>
-          exportTextFormat(textNode, textContent, textTransformersIndex),
+        (parentNode) => exportChildren(parentNode, textTransformersIndex, textMatchTransformers),
+        (textNode, textContent) => exportTextFormat(textNode, textContent, textTransformersIndex)
       );
 
       if (result != null) {
@@ -110,28 +84,20 @@ function exportChildren(
     }
 
     if ($isLineBreakNode(child)) {
-      output.push('\n');
+      output.push("\n");
     } else if ($isTextNode(child)) {
-      output.push(
-        exportTextFormat(child, child.getTextContent(), textTransformersIndex),
-      );
+      output.push(exportTextFormat(child, child.getTextContent(), textTransformersIndex));
     } else if ($isElementNode(child)) {
-      output.push(
-        exportChildren(child, textTransformersIndex, textMatchTransformers),
-      );
+      output.push(exportChildren(child, textTransformersIndex, textMatchTransformers));
     } else if ($isDecoratorNode(child)) {
       output.push(child.getTextContent());
     }
   }
 
-  return output.join('');
+  return output.join("");
 }
 
-function exportTextFormat(
-  node: TextNode,
-  textContent: string,
-  textTransformers: Array<TextFormatTransformer>,
-): string {
+function exportTextFormat(node: TextNode, textContent: string, textTransformers: Array<TextFormatTransformer>): string {
   // This function handles the case of a string looking like this: "   foo   "
   // Where it would be invalid markdown to generate: "**   foo   **"
   // We instead want to trim the whitespace out, apply formatting, and then
@@ -177,9 +143,7 @@ function getTextSibling(node: TextNode, backward: boolean): TextNode | null {
     const parent = node.getParentOrThrow();
 
     if (parent.isInline()) {
-      sibling = backward
-        ? parent.getPreviousSibling()
-        : parent.getNextSibling();
+      sibling = backward ? parent.getPreviousSibling() : parent.getNextSibling();
     }
   }
 
@@ -189,16 +153,12 @@ function getTextSibling(node: TextNode, backward: boolean): TextNode | null {
         break;
       }
 
-      const descendant = backward
-        ? sibling.getLastDescendant()
-        : sibling.getFirstDescendant();
+      const descendant = backward ? sibling.getLastDescendant() : sibling.getFirstDescendant();
 
       if ($isTextNode(descendant)) {
         return descendant;
       } else {
-        sibling = backward
-          ? sibling.getPreviousSibling()
-          : sibling.getNextSibling();
+        sibling = backward ? sibling.getPreviousSibling() : sibling.getNextSibling();
       }
     }
 
@@ -214,9 +174,6 @@ function getTextSibling(node: TextNode, backward: boolean): TextNode | null {
   return null;
 }
 
-function hasFormat(
-  node: LexicalNode | null | undefined,
-  format: TextFormatType,
-): boolean {
+function hasFormat(node: LexicalNode | null | undefined, format: TextFormatType): boolean {
   return $isTextNode(node) && node.hasFormat(format);
 }
