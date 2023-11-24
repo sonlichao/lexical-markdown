@@ -34,7 +34,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "package.json"
   ],
   "scripts": {
     "build": "tsc --build",
