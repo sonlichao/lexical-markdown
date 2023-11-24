@@ -38,7 +38,7 @@
   ],
   "scripts": {
     "build": "tsc --build",
-    "clean": "tsc --build --clean"
+    "clean": "rm -rf ./dist;  tsc --build --clean"
   },
   "devDependencies": {
     "@lexical/headless": "^0.12.4",
