@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "version": "0.12.4",
-  "main": "LexicalMarkdown.js",
+  "main": "index.js",
   "peerDependencies": {
     "lexical": "0.12.4"
   },
