@@ -32,7 +32,6 @@
     "directory": "packages/lexical-markdown"
   },
   "files": [
-    "dist",
     "LICENSE",
     "README.md",
     "package.json"
