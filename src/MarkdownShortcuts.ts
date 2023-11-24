@@ -6,7 +6,12 @@
  *
  */
 
-import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type {
+  ElementTransformer,
+  TextFormatTransformer,
+  TextMatchTransformer,
+  Transformer,
+} from "./MarkdownTransformers";
 import type { ElementNode, LexicalEditor, TextNode } from "lexical";
 
 import { $isCodeNode } from "@lexical/code";

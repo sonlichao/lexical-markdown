@@ -7,7 +7,12 @@
  */
 
 import type { CodeNode } from "@lexical/code";
-import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type {
+  ElementTransformer,
+  TextFormatTransformer,
+  TextMatchTransformer,
+  Transformer,
+} from "./MarkdownTransformers";
 import type { LexicalNode, TextNode } from "lexical";
 
 import { $createCodeNode } from "@lexical/code";

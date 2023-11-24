@@ -1,4 +1,4 @@
-# `@lexical/markdown`
+# `@lexical/markdown-dejiren`
 
 This package contains markdown helpers for Lexical: import, export and shortcuts.
 

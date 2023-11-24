@@ -1,4 +1,4 @@
-/** @module @lexical/markdown */
+/** @module @lexical/markdown-dejiren */
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -6,10 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from './MarkdownTransformers';
-import type { ElementNode } from 'lexical';
-import { registerMarkdownShortcuts } from './MarkdownShortcuts';
-import { BOLD_ITALIC_STAR, BOLD_ITALIC_UNDERSCORE, BOLD_STAR, BOLD_UNDERSCORE, CHECK_LIST, CODE, HEADING, HIGHLIGHT, INLINE_CODE, ITALIC_STAR, ITALIC_UNDERSCORE, LINK, ORDERED_LIST, QUOTE, STRIKETHROUGH, UNORDERED_LIST } from './MarkdownTransformers';
+import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "./MarkdownTransformers";
+import type { ElementNode } from "lexical";
+import { registerMarkdownShortcuts } from "./MarkdownShortcuts";
+import { BOLD_ITALIC_STAR, BOLD_ITALIC_UNDERSCORE, BOLD_STAR, BOLD_UNDERSCORE, CHECK_LIST, CODE, HEADING, HIGHLIGHT, INLINE_CODE, ITALIC_STAR, ITALIC_UNDERSCORE, LINK, ORDERED_LIST, QUOTE, STRIKETHROUGH, UNORDERED_LIST } from "./MarkdownTransformers";
 declare const ELEMENT_TRANSFORMERS: Array<ElementTransformer>;
 declare const TEXT_FORMAT_TRANSFORMERS: Array<TextFormatTransformer>;
 declare const TEXT_MATCH_TRANSFORMERS: Array<TextMatchTransformer>;

@@ -7,7 +7,12 @@
  */
 
 import type { ListNode } from "@lexical/list";
-import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type {
+  ElementTransformer,
+  TextFormatTransformer,
+  TextMatchTransformer,
+  Transformer,
+} from "./MarkdownTransformers";
 import type { ElementNode, LexicalNode, TextFormatType } from "lexical";
 
 import { $isCodeNode } from "@lexical/code";

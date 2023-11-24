@@ -5,6 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import type { Transformer } from "@lexical/markdown";
+import type { Transformer } from "./MarkdownTransformers";
 import type { ElementNode } from "lexical";
 export declare function createMarkdownExport(transformers: Array<Transformer>): (node?: ElementNode) => string;

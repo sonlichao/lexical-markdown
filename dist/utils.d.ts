@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "@lexical/markdown";
+import type { ElementTransformer, TextFormatTransformer, TextMatchTransformer, Transformer } from "./MarkdownTransformers";
 import type { ElementNode, LexicalNode, TextFormatType } from "lexical";
 type MarkdownFormatKind = "noTransformation" | "paragraphH1" | "paragraphH2" | "paragraphH3" | "paragraphH4" | "paragraphH5" | "paragraphH6" | "paragraphBlockQuote" | "paragraphUnorderedList" | "paragraphOrderedList" | "paragraphCodeBlock" | "horizontalRule" | "bold" | "code" | "italic" | "underline" | "strikethrough" | "italic_bold" | "strikethrough_italic" | "strikethrough_bold" | "strikethrough_italic_bold" | "link";
 type MarkdownCriteria = Readonly<{

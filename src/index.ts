@@ -1,4 +1,4 @@
-/** @module @lexical/markdown */
+/** @module @lexical/markdown-dejiren */
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -12,12 +12,12 @@ import type {
   TextFormatTransformer,
   TextMatchTransformer,
   Transformer,
-} from './MarkdownTransformers';
-import type {ElementNode} from 'lexical';
+} from "./MarkdownTransformers";
+import type { ElementNode } from "lexical";
 
-import {createMarkdownExport} from './MarkdownExport';
-import {createMarkdownImport} from './MarkdownImport';
-import {registerMarkdownShortcuts} from './MarkdownShortcuts';
+import { createMarkdownExport } from "./MarkdownExport";
+import { createMarkdownImport } from "./MarkdownImport";
+import { registerMarkdownShortcuts } from "./MarkdownShortcuts";
 import {
   BOLD_ITALIC_STAR,
   BOLD_ITALIC_UNDERSCORE,
@@ -35,15 +35,9 @@ import {
   QUOTE,
   STRIKETHROUGH,
   UNORDERED_LIST,
-} from './MarkdownTransformers';
+} from "./MarkdownTransformers";
 
-const ELEMENT_TRANSFORMERS: Array<ElementTransformer> = [
-  HEADING,
-  QUOTE,
-  CODE,
-  UNORDERED_LIST,
-  ORDERED_LIST,
-];
+const ELEMENT_TRANSFORMERS: Array<ElementTransformer> = [HEADING, QUOTE, CODE, UNORDERED_LIST, ORDERED_LIST];
 
 // Order of text format transformers matters:
 //
@@ -72,16 +66,13 @@ const TRANSFORMERS: Array<Transformer> = [
 function $convertFromMarkdownString(
   markdown: string,
   transformers: Array<Transformer> = TRANSFORMERS,
-  node?: ElementNode,
+  node?: ElementNode
 ): void {
   const importMarkdown = createMarkdownImport(transformers);
   return importMarkdown(markdown, node);
 }
 
-function $convertToMarkdownString(
-  transformers: Array<Transformer> = TRANSFORMERS,
-  node?: ElementNode,
-): string {
+function $convertToMarkdownString(transformers: Array<Transformer> = TRANSFORMERS, node?: ElementNode): string {
   const exportMarkdown = createMarkdownExport(transformers);
   return exportMarkdown(node);
 }

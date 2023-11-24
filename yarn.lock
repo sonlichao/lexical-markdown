@@ -572,18 +572,6 @@
   dependencies:
     "@lexical/utils" "0.12.4"
 
-"@lexical/markdown@^0.12.4":
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/@lexical/markdown/-/markdown-0.12.4.tgz#ca492a9c76ce7d24e49a51603f770fdfe23d0b51"
-  integrity sha512-cOk0dkafyvQI4DMwwMfkP329bRVfyhXcVF3dcRiydl6ZIgqOrj/EMi+C0qxQkcqg0MO26Rky6LLJ4vQi6AgJDg==
-  dependencies:
-    "@lexical/code" "0.12.4"
-    "@lexical/link" "0.12.4"
-    "@lexical/list" "0.12.4"
-    "@lexical/rich-text" "0.12.4"
-    "@lexical/text" "0.12.4"
-    "@lexical/utils" "0.12.4"
-
 "@lexical/rich-text@0.12.4":
   version "0.12.4"
   resolved "https://registry.yarnpkg.com/@lexical/rich-text/-/rich-text-0.12.4.tgz#545a1d6bd88e930c572d17fe504a8796f6af0c9d"

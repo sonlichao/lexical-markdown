@@ -1,5 +1,5 @@
 "use strict";
-/** @module @lexical/markdown */
+/** @module @lexical/markdown-dejiren */
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -30,13 +30,7 @@ Object.defineProperty(exports, "ORDERED_LIST", { enumerable: true, get: function
 Object.defineProperty(exports, "QUOTE", { enumerable: true, get: function () { return MarkdownTransformers_1.QUOTE; } });
 Object.defineProperty(exports, "STRIKETHROUGH", { enumerable: true, get: function () { return MarkdownTransformers_1.STRIKETHROUGH; } });
 Object.defineProperty(exports, "UNORDERED_LIST", { enumerable: true, get: function () { return MarkdownTransformers_1.UNORDERED_LIST; } });
-const ELEMENT_TRANSFORMERS = [
-    MarkdownTransformers_1.HEADING,
-    MarkdownTransformers_1.QUOTE,
-    MarkdownTransformers_1.CODE,
-    MarkdownTransformers_1.UNORDERED_LIST,
-    MarkdownTransformers_1.ORDERED_LIST,
-];
+const ELEMENT_TRANSFORMERS = [MarkdownTransformers_1.HEADING, MarkdownTransformers_1.QUOTE, MarkdownTransformers_1.CODE, MarkdownTransformers_1.UNORDERED_LIST, MarkdownTransformers_1.ORDERED_LIST];
 exports.ELEMENT_TRANSFORMERS = ELEMENT_TRANSFORMERS;
 // Order of text format transformers matters:
 //
